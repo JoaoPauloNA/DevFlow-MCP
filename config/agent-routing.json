@@ -1,0 +1,455 @@
+{
+  "schema_version": 1,
+  "default_fallback_on": [
+    "PROVIDER_UNAVAILABLE",
+    "RATE_LIMITED",
+    "TIMEOUT",
+    "AUTH_UNAVAILABLE",
+    "CLI_UNAVAILABLE",
+    "MODEL_UNAVAILABLE",
+    "INVALID_JSON",
+    "INVALID_SCHEMA",
+    "CONNECTION_REFUSED",
+    "HTTP_ERROR"
+  ],
+  "connections": {
+    "codex": {
+      "type": "openai-compatible",
+      "base_url": "http://127.0.0.1:8320/v1",
+      "auth": {
+        "type": "env",
+        "env": "CLIPROXY_CODEX_API_KEY"
+      },
+      "quota_group": "codex",
+      "enabled": true,
+      "timeout": 180
+    },
+    "codex2": {
+      "type": "openai-compatible",
+      "base_url": "http://127.0.0.1:8321/v1",
+      "auth": {
+        "type": "env",
+        "env": "CLIPROXY_CODEX2_API_KEY"
+      },
+      "quota_group": "codex2",
+      "enabled": true,
+      "timeout": 180
+    },
+    "codex3": {
+      "type": "openai-compatible",
+      "base_url": "http://127.0.0.1:8322/v1",
+      "auth": {
+        "type": "env",
+        "env": "CLIPROXY_CODEX3_API_KEY"
+      },
+      "quota_group": "codex3",
+      "enabled": true,
+      "timeout": 180
+    },
+    "agy": {
+      "type": "openai-compatible",
+      "base_url": "http://127.0.0.1:8310/v1",
+      "auth": {
+        "type": "env",
+        "env": "CLIPROXY_AGY_API_KEY"
+      },
+      "quota_group": "agy",
+      "enabled": true,
+      "timeout": 180
+    },
+    "agy2": {
+      "type": "openai-compatible",
+      "base_url": "http://127.0.0.1:8312/v1",
+      "auth": {
+        "type": "env",
+        "env": "CLIPROXY_AGY2_API_KEY"
+      },
+      "quota_group": "agy2",
+      "enabled": true,
+      "timeout": 180
+    },
+    "agy3": {
+      "type": "openai-compatible",
+      "base_url": "http://127.0.0.1:8311/v1",
+      "auth": {
+        "type": "env",
+        "env": "CLIPROXY_AGY3_API_KEY"
+      },
+      "quota_group": "agy3",
+      "enabled": true,
+      "timeout": 180
+    }
+  },
+  "roles": {
+    "ENGINEER": {
+      "strategy": "sequential",
+      "candidates": [
+        {
+          "id": "engineer-codex2",
+          "connection": "codex2",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "engineer-codex3",
+          "connection": "codex3",
+          "model": "gpt-5.6-sol-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "engineer-codex",
+          "connection": "codex",
+          "model": "gpt-5.6-sol-medium",
+          "enabled": true,
+          "technical_retries": 1
+        }
+      ]
+    },
+    "DEV:FRONTEND:SIMPLE": {
+      "strategy": "sequential",
+      "candidates": [
+        {
+          "id": "dev-fe-simple-agy",
+          "connection": "agy",
+          "model": "gemini-3.7-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-fe-simple-agy3",
+          "connection": "agy3",
+          "model": "gemini-3.7-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-fe-simple-codex2",
+          "connection": "codex2",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-fe-simple-codex3",
+          "connection": "codex3",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-fe-simple-codex",
+          "connection": "codex",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        }
+      ]
+    },
+    "DEV:FRONTEND:COMPLEX": {
+      "strategy": "sequential",
+      "candidates": [
+        {
+          "id": "dev-fe-complex-agy",
+          "connection": "agy",
+          "model": "gemini-3.8-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-fe-complex-codex2",
+          "connection": "codex2",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-fe-complex-codex3",
+          "connection": "codex3",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-fe-complex-codex",
+          "connection": "codex",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        }
+      ]
+    },
+    "DEV:BACKEND:SIMPLE": {
+      "strategy": "sequential",
+      "candidates": [
+        {
+          "id": "dev-be-simple-codex2",
+          "connection": "codex2",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-be-simple-agy3",
+          "connection": "agy3",
+          "model": "gemini-3.7-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-be-simple-codex3",
+          "connection": "codex3",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-be-simple-codex",
+          "connection": "codex",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        }
+      ]
+    },
+    "DEV:BACKEND:COMPLEX": {
+      "strategy": "sequential",
+      "candidates": [
+        {
+          "id": "dev-be-complex-codex2",
+          "connection": "codex2",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-be-complex-agy",
+          "connection": "agy",
+          "model": "gemini-3.8-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-be-complex-codex3",
+          "connection": "codex3",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-be-complex-codex",
+          "connection": "codex",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        }
+      ]
+    },
+    "DEV:DATABASE:SIMPLE": {
+      "strategy": "sequential",
+      "candidates": [
+        {
+          "id": "dev-db-simple-codex2",
+          "connection": "codex2",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-db-simple-agy3",
+          "connection": "agy3",
+          "model": "gemini-3.7-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-db-simple-codex3",
+          "connection": "codex3",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-db-simple-codex",
+          "connection": "codex",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        }
+      ]
+    },
+    "DEV:DATABASE:COMPLEX": {
+      "strategy": "sequential",
+      "candidates": [
+        {
+          "id": "dev-db-complex-codex2",
+          "connection": "codex2",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-db-complex-agy",
+          "connection": "agy",
+          "model": "gemini-3.8-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-db-complex-codex3",
+          "connection": "codex3",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "dev-db-complex-codex",
+          "connection": "codex",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        }
+      ]
+    },
+    "QA:SIMPLE": {
+      "strategy": "sequential",
+      "candidates": [
+        {
+          "id": "qa-simple-codex2",
+          "connection": "codex2",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "qa-simple-agy3",
+          "connection": "agy3",
+          "model": "gemini-3.7-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "qa-simple-codex3",
+          "connection": "codex3",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "qa-simple-codex",
+          "connection": "codex",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        }
+      ]
+    },
+    "QA:COMPLEX": {
+      "strategy": "sequential",
+      "candidates": [
+        {
+          "id": "qa-complex-agy",
+          "connection": "agy",
+          "model": "gemini-3.8-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "qa-complex-codex2",
+          "connection": "codex2",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "qa-complex-codex3",
+          "connection": "codex3",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "qa-complex-codex",
+          "connection": "codex",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        }
+      ]
+    },
+    "IQA:NORMAL": {
+      "strategy": "sequential",
+      "candidates": [
+        {
+          "id": "iqa-normal-agy3",
+          "connection": "agy3",
+          "model": "gemini-3.7-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "iqa-normal-agy",
+          "connection": "agy",
+          "model": "gemini-3.7-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "iqa-normal-codex2",
+          "connection": "codex2",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "iqa-normal-codex3",
+          "connection": "codex3",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "iqa-normal-codex",
+          "connection": "codex",
+          "model": "gpt-5.6-luna",
+          "enabled": true,
+          "technical_retries": 1
+        }
+      ]
+    },
+    "IQA:CRITICAL": {
+      "strategy": "sequential",
+      "candidates": [
+        {
+          "id": "iqa-critical-codex2",
+          "connection": "codex2",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "iqa-critical-agy",
+          "connection": "agy",
+          "model": "gemini-3.8-flash-high",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "iqa-critical-codex3",
+          "connection": "codex3",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        },
+        {
+          "id": "iqa-critical-codex",
+          "connection": "codex",
+          "model": "gpt-5.6-terra-medium",
+          "enabled": true,
+          "technical_retries": 1
+        }
+      ]
+    }
+  }
+}

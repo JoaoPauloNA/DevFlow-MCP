@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DevFlowAgentRoutingConfig",
+  "description": "Schema para configuração declarativa de rotas, conexões e modelos dos agentes do DevFlow MCP v1.2.0.",
+  "type": "object",
+  "required": ["schema_version", "connections", "roles"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Versão do schema de roteamento declarativo (ex: 1)."
+    },
+    "default_fallback_on": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Lista de razões de falhas técnicas que disparam fallback automático."
+    },
+    "connections": {
+      "type": "object",
+      "description": "Registro de conexões disponíveis com provedores / gateways de IA.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["type", "base_url", "auth"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["openai-compatible", "anthropic-compatible", "custom-http"]
+          },
+          "base_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "auth": {
+            "type": "object",
+            "required": ["type"],
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["env", "none", "bearer"]
+              },
+              "env": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              }
+            }
+          },
+          "quota_group": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "timeout": {
+            "type": "number",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "roles": {
+      "type": "object",
+      "description": "Definição declarativa dos papéis e candidatos ordenados.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["candidates"],
+        "additionalProperties": false,
+        "properties": {
+          "strategy": {
+            "type": "string",
+            "enum": ["sequential", "weighted", "priority"],
+            "default": "sequential"
+          },
+          "fallback_on": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "connection", "model"],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "connection": {
+                  "type": "string"
+                },
+                "model": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "technical_retries": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 1
+                },
+                "temperature": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "maximum": 2.0
+                },
+                "max_tokens": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
