@@ -1,5 +1,6 @@
 import json
-import time
+import os
+import subprocess
 import urllib.request
 import urllib.error
 from .config import resolve_auth_header
@@ -18,13 +19,11 @@ class AuthError(TechnicalError): pass
 class NetworkTimeoutError(TechnicalError): pass
 class InvalidEnvelopeError(TechnicalError): pass
 
-class ProviderExecutor:
-    """Decoupled executor for AI model API requests."""
-    def __init__(self, secrets_resolver=None):
-        self.secrets_resolver = secrets_resolver or (lambda: {})
+class HttpExecutor:
+    def __init__(self, secrets_resolver):
+        self.secrets_resolver = secrets_resolver
 
-    def execute(self, connection_name, connection_cfg, model, messages, temperature=0.1, max_tokens=12000, timeout=None):
-        """Execute a single model request over an OpenAI-compatible connection."""
+    def execute(self, connection_name, connection_cfg, model, messages, temperature, max_tokens, timeout):
         base_url = connection_cfg.get('base_url', '').rstrip('/')
         if not base_url:
             raise AvailabilityError('NO_BASE_URL', f"Connection '{connection_name}' has no base_url configured")
@@ -34,45 +33,58 @@ class ProviderExecutor:
         auth_header = resolve_auth_header(connection_cfg.get('auth'), connection_name, secrets)
 
         endpoint = f"{base_url}/chat/completions"
-        payload = {
-            'model': model,
-            'messages': messages,
-            'temperature': temperature,
-            'max_tokens': max_tokens
-        }
-        body = json.dumps(payload).encode('utf-8')
-        headers = {'Content-Type': 'application/json'}
-        if auth_header:
-            headers['Authorization'] = auth_header
-
-        req = urllib.request.Request(endpoint, data=body, headers=headers)
+        payload = {'model': model, 'messages': messages, 'temperature': temperature, 'max_tokens': max_tokens}
+        
+        req = urllib.request.Request(endpoint, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+        if auth_header and auth_header != 'cli-session':
+            req.add_header('Authorization', auth_header)
         
         try:
             with urllib.request.urlopen(req, timeout=effective_timeout) as resp:
-                resp_bytes = resp.read()
-                try:
-                    data = json.loads(resp_bytes.decode('utf-8'))
-                    return data
-                except Exception as json_err:
-                    raise InvalidEnvelopeError('INVALID_JSON', f"Malformed JSON from {connection_name}/{model}: {str(json_err)[:100]}")
+                return json.loads(resp.read().decode('utf-8'))
         except urllib.error.HTTPError as http_err:
-            raw = http_err.read(400).decode('utf-8', errors='replace').lower()
             status_code = http_err.code
-            is_quota = status_code in (401, 403, 429) or 'quota' in raw or 'rate' in raw
+            is_quota = status_code in (401, 403, 429)
             if status_code in (401, 403):
-                raise AuthError(f'HTTP_{status_code}', f"Auth error {status_code} on {connection_name}: {raw[:80]}", quota=is_quota)
-            elif status_code == 429 or is_quota:
-                raise RateLimitError(f'HTTP_{status_code}', f"Rate limit / Quota exceeded on {connection_name}: {raw[:80]}", quota=True)
-            elif status_code >= 500:
-                raise AvailabilityError(f'HTTP_{status_code}', f"Server error {status_code} on {connection_name}: {raw[:80]}", quota=False)
-            else:
-                raise AvailabilityError(f'HTTP_{status_code}', f"HTTP error {status_code} on {connection_name}: {raw[:80]}", quota=is_quota)
-        except (urllib.error.URLError, TimeoutError) as net_err:
-            err_str = str(net_err).lower()
-            if 'timed out' in err_str or isinstance(net_err, TimeoutError):
-                raise NetworkTimeoutError('TIMEOUT', f"Request timed out on {connection_name}/{model} after {effective_timeout}s")
-            raise AvailabilityError('CONNECTION_REFUSED', f"Connection failed on {connection_name}: {type(net_err).__name__} {str(net_err)[:100]}")
-        except Exception as generic_err:
-            if isinstance(generic_err, TechnicalError):
-                raise generic_err
-            raise AvailabilityError('UNKNOWN_TECHNICAL_ERROR', f"Unexpected error on {connection_name}/{model}: {str(generic_err)[:100]}")
+                raise AuthError(f'HTTP_{status_code}', "Auth error", quota=is_quota)
+            elif status_code == 429:
+                raise RateLimitError(f'HTTP_{status_code}', "Rate limit", quota=True)
+            raise AvailabilityError(f'HTTP_{status_code}', "HTTP error")
+        except Exception as e:
+            raise AvailabilityError('CONNECTION_ERROR', str(e))
+
+class CliExecutor:
+    def execute(self, connection_name, connection_cfg, model, messages, timeout=None):
+        cmd = connection_cfg.get('command')
+        if not cmd or not os.path.isabs(cmd):
+            raise AvailabilityError('INVALID_CMD', f"Connection {connection_name} needs absolute command path")
+            
+        prompt = messages[-1]['content']
+        try:
+            result = subprocess.run([cmd, '--model', model, prompt], capture_output=True, text=True, timeout=timeout or 300)
+            if result.returncode != 0:
+                raise AvailabilityError('CLI_FAILED', result.stderr or result.stdout)
+            return json.loads(result.stdout)
+        except subprocess.TimeoutExpired:
+            raise NetworkTimeoutError('CLI_TIMEOUT', f"CLI execution timed out on {connection_name}")
+        except Exception as e:
+            raise AvailabilityError('CLI_EXEC_ERROR', str(e))
+
+class ProviderExecutor:
+    """Decoupled executor for AI model requests across Proxy, Direct API, and CLI transports."""
+    def __init__(self, secrets_resolver=None):
+        self.secrets_resolver = secrets_resolver or (lambda: {})
+        self.http_exec = HttpExecutor(self.secrets_resolver)
+        self.cli_exec = CliExecutor()
+
+    def execute(self, connection_name, connection_cfg, model, messages, temperature=0.1, max_tokens=12000, timeout=None):
+        from .adapters import DirectApiExecutor
+        transport = connection_cfg.get('transport', 'proxy')
+        if transport == 'direct-cli':
+            return self.cli_exec.execute(connection_name, connection_cfg, model, messages, timeout)
+        elif transport == 'direct-api':
+            api_exec = DirectApiExecutor(self.secrets_resolver)
+            return api_exec.execute(connection_name, connection_cfg, model, messages, temperature, max_tokens, timeout)
+        else: # proxy
+            return self.http_exec.execute(connection_name, connection_cfg, model, messages, temperature, max_tokens, timeout)
+

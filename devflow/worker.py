@@ -69,20 +69,23 @@ class Worker:
         raw_candidates = self.router.candidates(role, area, complexity, criticality, routing_config=routing_snapshot)
         
         for cand_entry in raw_candidates:
-            if len(cand_entry) == 5:
-                pos, cand_obj, p, m, cfg = cand_entry
-                candidate_id = cand_obj.get('id')
-            else:
-                pos, p, m, cfg = cand_entry
-                candidate_id = f"{role}-{p}-{pos}"
-                cand_obj = {'id': candidate_id, 'connection': p, 'model': m, 'technical_retries': 1}
-
-            if p == 'codex' and hasattr(self.router, 'primary_codex_allowed') and not self.router.primary_codex_allowed():
-                self.db.event(w['id'], task['id'] if task else None, 'INFO', '[ROUTER] primary Codex reserved for Codex 2 and Codex 3 quota exhaustion')
-                continue
+            pos, cand_obj, p, m, conn_cfg = cand_entry
+            candidate_id = cand_obj.get('id', f"{role}-{p}-{pos}")
+            
+            # Extract transport info
+            transport = conn_cfg.get('transport', 'proxy')
+            provider = conn_cfg.get('provider', 'unknown')
+            protocol = conn_cfg.get('protocol', 'unknown')
+            connection_name = p
 
             started = time.time()
-            self.db.event(w['id'], task['id'] if task else None, 'INFO', f'[{role}] started — {p}/{m}', {'candidate_id': candidate_id, 'position': pos})
+            self.db.event(w['id'], task['id'] if task else None, 'INFO', f'[{role}] started — {transport}/{provider}/{protocol} ({p}/{m})', {
+                'candidate_id': candidate_id, 
+                'position': pos,
+                'transport': transport,
+                'provider': provider,
+                'protocol': protocol
+            })
             
             try:
                 messages = [
@@ -90,15 +93,13 @@ class Worker:
                     {'role': 'user', 'content': prompt}
                 ]
                 
-                if hasattr(self.router, 'execute_chat'):
-                    response, retry = self.router.execute_chat(cand_obj, p, m, cfg, messages)
-                elif hasattr(self.router, 'chat'):
-                    response, retry = self.router.chat(p, m, cfg, messages)
-                else:
-                    raise RuntimeError("Router has no chat method")
+                # Execute using router (which delegates to executor)
+                response, retry = self.router.execute_chat(cand_obj, p, m, conn_cfg, messages)
 
-                text = content(response)
-                usage = response.get('usage', {})
+                # Normalize response if it came from adapter
+                text = response.get('text', content(response))
+                input_tokens = response.get('input_tokens', response.get('usage', {}).get('prompt_tokens', 0))
+                output_tokens = response.get('output_tokens', response.get('usage', {}).get('completion_tokens', 0))
                 
                 self.db.run(
                     workflow_id=w['id'],
@@ -107,21 +108,21 @@ class Worker:
                     area=area,
                     complexity=complexity,
                     criticality=criticality,
-                    provider=p,
+                    provider=provider, # canonicalized
                     model=m,
-                    quota_group=cfg.get('quota_group', p),
+                    quota_group=conn_cfg.get('quota_group', p),
                     fallback_position=pos,
                     start=started,
                     end=time.time(),
                     duration=time.time() - started,
                     result='OK',
                     retry_count=retry,
-                    input_tokens=usage.get('prompt_tokens'),
-                    output_tokens=usage.get('completion_tokens'),
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
                     cached_tokens=None,
-                    detail='compact result',
+                    detail=f"transport={transport} protocol={protocol}",
                     candidate_id=candidate_id,
-                    connection=p,
+                    connection=connection_name,
                     attempt=retry + 1,
                     technical_retry=retry,
                     fallback_reason=None
@@ -131,8 +132,8 @@ class Worker:
                 raw = str(e)
                 quota = getattr(e, 'quota', False) or ('quota=True' in raw)
                 if hasattr(self.router, 'unavailable'):
-                    self.router.unavailable(p, m, cfg, raw, quota)
-                self.db.event(w['id'], task['id'] if task else None, 'WARN', f'[{role}] fallback from {p}/{m}', {
+                    self.router.unavailable(connection_name, m, conn_cfg, raw, quota)
+                self.db.event(w['id'], task['id'] if task else None, 'WARN', f'[{role}] fallback from {transport}/{provider}/{protocol}', {
                     'position': pos,
                     'candidate_id': candidate_id,
                     'quota': quota,

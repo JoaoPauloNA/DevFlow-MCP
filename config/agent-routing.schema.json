@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "DevFlowAgentRoutingConfig",
-  "description": "Schema para configuração declarativa de rotas, conexões e modelos dos agentes do DevFlow MCP v1.2.0.",
+  "title": "DevFlowMultiTransportRoutingConfig",
+  "description": "Schema para configuração declarativa multi-transporte (Proxy, Direct CLI, Direct API) de conexões, candidatos e papéis do DevFlow MCP.",
   "type": "object",
   "required": ["schema_version", "connections", "roles"],
   "additionalProperties": false,
@@ -9,7 +9,7 @@
     "schema_version": {
       "type": "integer",
       "minimum": 1,
-      "description": "Versão do schema de roteamento declarativo (ex: 1)."
+      "description": "Versão do schema de roteamento (ex: 2 para multi-transporte, 1 para v1 legado)."
     },
     "default_fallback_on": {
       "type": "array",
@@ -18,19 +18,39 @@
     },
     "connections": {
       "type": "object",
-      "description": "Registro de conexões disponíveis com provedores / gateways de IA.",
+      "description": "Registro de conexões de transporte disponíveis.",
       "additionalProperties": {
         "type": "object",
-        "required": ["type", "base_url", "auth"],
+        "required": ["auth"],
         "additionalProperties": false,
         "properties": {
+          "transport": {
+            "type": "string",
+            "enum": ["proxy", "direct-cli", "direct-api"],
+            "description": "Modo físico/transporte de conexão: proxy, direct-cli ou direct-api."
+          },
+          "provider": {
+            "type": "string",
+            "description": "Identificador do provedor (ex: cliproxy, openai, anthropic, openrouter, deepseek, zhipu-glm, glm, qwen, alibaba-model-studio, codex, gemini)."
+          },
+          "protocol": {
+            "type": "string",
+            "enum": ["openai-chat", "openai-responses", "anthropic-messages", "codex-cli", "gemini-cli", "generic-cli", "custom-http"],
+            "description": "Protocolo de comunicação com o modelo ou adaptador de CLI."
+          },
           "type": {
             "type": "string",
-            "enum": ["openai-compatible", "anthropic-compatible", "custom-http"]
+            "enum": ["openai-compatible", "anthropic-compatible", "custom-http"],
+            "description": "Campo de compatibilidade v1 (convertido internamente para transport/protocol)."
           },
           "base_url": {
             "type": "string",
-            "format": "uri"
+            "format": "uri",
+            "description": "URL base para conexões proxy ou direct-api."
+          },
+          "command": {
+            "type": "string",
+            "description": "Caminho executável para conexões direct-cli."
           },
           "auth": {
             "type": "object",
@@ -39,16 +59,18 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["env", "none", "bearer"]
+                "enum": ["env", "cli-session", "none", "bearer"]
               },
               "env": {
                 "type": "string",
-                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                "description": "Nome da variável de ambiente que contém a chave/token."
               }
             }
           },
           "quota_group": {
-            "type": "string"
+            "type": "string",
+            "description": "Grupo de cota para circuit breaker e resfriamento compartilhado."
           },
           "enabled": {
             "type": "boolean",
@@ -57,13 +79,24 @@
           "timeout": {
             "type": "number",
             "minimum": 1
+          },
+          "capabilities": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "text": { "type": "boolean", "default": true },
+              "vision": { "type": "boolean", "default": false },
+              "tools": { "type": "boolean", "default": true },
+              "json_schema": { "type": "boolean", "default": true },
+              "streaming": { "type": "boolean", "default": false }
+            }
           }
         }
       }
     },
     "roles": {
       "type": "object",
-      "description": "Definição declarativa dos papéis e candidatos ordenados.",
+      "description": "Definição dos papéis e das cadeias ordenadas de candidatos.",
       "additionalProperties": {
         "type": "object",
         "required": ["candidates"],
@@ -77,6 +110,15 @@
           "fallback_on": {
             "type": "array",
             "items": { "type": "string" }
+          },
+          "requires": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "vision": { "type": "boolean" },
+              "tools": { "type": "boolean" },
+              "json_schema": { "type": "boolean" }
+            }
           },
           "candidates": {
             "type": "array",
@@ -111,6 +153,10 @@
                 },
                 "max_tokens": {
                   "type": "integer",
+                  "minimum": 1
+                },
+                "timeout": {
+                  "type": "number",
                   "minimum": 1
                 }
               }

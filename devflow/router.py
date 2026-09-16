@@ -131,6 +131,7 @@ class RoleRouter:
         last_error = None
         for attempt in range(1 + technical_retries):
             try:
+                # The ProviderExecutor now handles the transport dispatch internally via execute()
                 response = self.executor.execute(
                     connection_name=connection_name,
                     connection_cfg=conn_cfg,
@@ -144,11 +145,9 @@ class RoleRouter:
             except TechnicalError as tech_err:
                 last_error = tech_err
                 if attempt < technical_retries:
-                    # Retry within candidate
                     time.sleep(0.1)
                     continue
                 else:
-                    # Exhausted candidate retries, re-raise for fallback
                     raise last_error
 
 # Backward-compatibility alias

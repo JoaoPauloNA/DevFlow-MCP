@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "default_fallback_on": [
     "PROVIDER_UNAVAILABLE",
     "RATE_LIMITED",
@@ -9,7 +9,9 @@
   ],
   "connections": {
     "primary-gateway": {
-      "type": "openai-compatible",
+      "transport": "proxy",
+      "provider": "cliproxy",
+      "protocol": "openai-chat",
       "base_url": "http://127.0.0.1:8321/v1",
       "auth": {
         "type": "env",
@@ -20,7 +22,9 @@
       "timeout": 180
     },
     "backup-gateway": {
-      "type": "openai-compatible",
+      "transport": "proxy",
+      "provider": "cliproxy",
+      "protocol": "openai-chat",
       "base_url": "http://127.0.0.1:8311/v1",
       "auth": {
         "type": "env",

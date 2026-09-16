@@ -8,25 +8,25 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from devflow.migration import migrate_roles_to_agent_routing
+from devflow.migration import migrate_and_save
 from devflow.doctor import run_doctor
 
 def main():
     if len(sys.argv) < 2:
         print("Uso: devflow <command> [args...]")
         print("Comandos disponíveis:")
-        print("  migrate-routing-config [src_roles.json] [dst_agent_routing.json]")
+        print("  migrate-routing-config [src_cfg.json] [dst_cfg.json]")
         print("  doctor [--config <path>] [--db <path>]")
         sys.exit(1)
 
     cmd = sys.argv[1]
     if cmd == 'migrate-routing-config':
-        src = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'config/roles.json')
+        src = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'config/agent-routing.json')
         dst = sys.argv[3] if len(sys.argv) > 3 else str(ROOT / 'config/agent-routing.json')
         print(f"Migrando {src} -> {dst}...")
         try:
-            res = migrate_roles_to_agent_routing(src, dst)
-            print(json.dumps(res, indent=2))
+            backup = migrate_and_save(src, dst)
+            print(f"Migração concluída. Backup em {backup}")
         except Exception as e:
             print(f"Erro na migração: {e}", file=sys.stderr)
             sys.exit(1)

@@ -24,12 +24,20 @@ def check_routing_config(config_path=None):
         diag["connections_count"] = len(connections)
         diag["roles_count"] = len(roles)
         
-        # Check connections
+        # Check connections with protocol/transport
         for cname, cinfo in connections.items():
+            transport = cinfo.get("transport", "proxy")
+            protocol = cinfo.get("protocol", "openai-chat")
             auth_info = cinfo.get("auth", {})
             auth_type = auth_info.get("type", "unknown")
             env_ref = auth_info.get("env")
-            diag["details"].append(f"Connection '{cname}': {cinfo.get('base_url')} (auth: {auth_type}, env: {env_ref})")
+            base = cinfo.get("base_url") or cinfo.get("command")
+            diag["details"].append(f"Connection '{cname}': {transport}/{cinfo.get('provider')}/{protocol} -> {base} (auth: {auth_type}, env: {env_ref})")
+            
+            # Probe if transport is CLI and file exists
+            if transport == 'direct-cli' and not os.path.exists(base):
+                diag["errors"].append(f"CLI executable not found for connection '{cname}': {base}")
+                diag["status"] = "FAIL"
             
         # Check roles and candidate models
         for rname, rinfo in roles.items():
