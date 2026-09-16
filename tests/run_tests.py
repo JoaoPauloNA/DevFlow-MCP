@@ -1,0 +1,5 @@
+from test_devflow import test_exact_model_matrix, test_json_envelope_accepts_model_trailing_text, test_e2e_a_and_persistence, test_e2e_b_correction_loop_and_fallback_position, test_unknown_vault_needs_user_without_creating_a_folder
+
+for test in (test_exact_model_matrix, test_json_envelope_accepts_model_trailing_text, test_e2e_a_and_persistence, test_e2e_b_correction_loop_and_fallback_position, test_unknown_vault_needs_user_without_creating_a_folder):
+    test()
+    print('PASS', test.__name__)

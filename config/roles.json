@@ -1,0 +1,22 @@
+{
+  "providers": {
+    "agy": {"base_url": "http://127.0.0.1:8310/v1", "secret_key": "cliproxyAgyApiKey", "quota_group": "agy"},
+    "agy3": {"base_url": "http://127.0.0.1:8311/v1", "secret_key": "cliproxyAgyApiKey", "quota_group": "agy3"},
+    "codex": {"base_url": "http://127.0.0.1:8320/v1", "secret_key": "cliproxyCodexApiKey", "quota_group": "codex"},
+    "codex2": {"base_url": "http://127.0.0.1:8321/v1", "secret_key": "cliproxyCodex2ApiKey", "quota_group": "codex2"},
+    "codex3": {"base_url": "http://127.0.0.1:8322/v1", "secret_key": "cliproxyCodex3ApiKey", "quota_group": "codex3"}
+  },
+  "routes": {
+    "ENGINEER": [["codex2", "gpt-5.6-terra-medium"], ["codex3", "gpt-5.6-sol-medium"], ["codex", "gpt-5.6-sol-medium"]],
+    "DEV:FRONTEND:SIMPLE": [["agy", "gemini-3.7-flash-high"], ["agy3", "gemini-3.7-flash-high"], ["codex2", "gpt-5.6-luna"], ["codex3", "gpt-5.6-luna"], ["codex", "gpt-5.6-luna"]],
+    "DEV:FRONTEND:COMPLEX": [["agy", "gemini-3.8-flash-high"], ["codex2", "gpt-5.6-terra-medium"], ["codex3", "gpt-5.6-terra-medium"], ["codex", "gpt-5.6-terra-medium"]],
+    "DEV:BACKEND:SIMPLE": [["codex2", "gpt-5.6-luna"], ["agy3", "gemini-3.7-flash-high"], ["codex3", "gpt-5.6-luna"], ["codex", "gpt-5.6-luna"]],
+    "DEV:BACKEND:COMPLEX": [["codex2", "gpt-5.6-terra-medium"], ["agy", "gemini-3.8-flash-high"], ["codex3", "gpt-5.6-terra-medium"], ["codex", "gpt-5.6-terra-medium"]],
+    "DEV:DATABASE:SIMPLE": [["codex2", "gpt-5.6-luna"], ["agy3", "gemini-3.7-flash-high"], ["codex3", "gpt-5.6-luna"], ["codex", "gpt-5.6-luna"]],
+    "DEV:DATABASE:COMPLEX": [["codex2", "gpt-5.6-terra-medium"], ["agy", "gemini-3.8-flash-high"], ["codex3", "gpt-5.6-terra-medium"], ["codex", "gpt-5.6-terra-medium"]],
+    "QA:SIMPLE": [["codex2", "gpt-5.6-luna"], ["agy3", "gemini-3.7-flash-high"], ["codex3", "gpt-5.6-luna"], ["codex", "gpt-5.6-luna"]],
+    "QA:COMPLEX": [["agy", "gemini-3.8-flash-high"], ["codex2", "gpt-5.6-terra-medium"], ["codex3", "gpt-5.6-terra-medium"], ["codex", "gpt-5.6-terra-medium"]],
+    "IQA:NORMAL": [["agy3", "gemini-3.7-flash-high"], ["agy", "gemini-3.7-flash-high"], ["codex2", "gpt-5.6-luna"], ["codex3", "gpt-5.6-luna"], ["codex", "gpt-5.6-luna"]],
+    "IQA:CRITICAL": [["codex2", "gpt-5.6-terra-medium"], ["agy", "gemini-3.8-flash-high"], ["codex3", "gpt-5.6-terra-medium"], ["codex", "gpt-5.6-terra-medium"]]
+  }
+}

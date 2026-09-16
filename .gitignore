@@ -1,0 +1,38 @@
+# Segredos e variáveis de ambiente
+.env
+.env.*
+!.env.example
+secrets.env
+*.key
+*.pem
+*.secret
+
+# Runtime e persistência de dados
+runtime/
+runtime-*/
+worktrees/
+*.sqlite
+*.sqlite3
+
+# Logs e diagnósticos
+logs/
+*.log
+*.err
+
+# Caches Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+
+# Sistema operacional e editores
+.DS_Store
+.vscode/
+.idea/
+
+# Dados de teste privados e Vault local
+DadosTeste/
+vault/
+*.canvas
