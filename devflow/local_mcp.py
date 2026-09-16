@@ -2,14 +2,15 @@
 """Local-only read-only Git and browser-report MCP servers."""
 import argparse
 import json
+import os
 import re
 import subprocess
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-PROJECTS_ROOT = Path('/Users/joaopaulo/Documents/Projetos').resolve()
-REPORT_ROOT = Path('/Users/joaopaulo/Meu Drive/Projetos (1)/DadosTeste/002-DevFlow-MCP/capturas-navegador')
+PROJECTS_ROOT = Path(os.getenv('DEVFLOW_PROJECTS_ROOT', '.')).resolve()
+REPORT_ROOT = Path(os.getenv('DEVFLOW_REPORT_ROOT', 'runtime/reports')).resolve()
 
 GIT_TOOLS = [
     {'name': 'git_repository_summary', 'description': 'Read-only branch, status, and recent commits for an allowed local Git repository.', 'inputSchema': {'type': 'object', 'required': ['repo_path'], 'properties': {'repo_path': {'type': 'string'}}}},
@@ -32,8 +33,8 @@ def safe_name(value):
 
 def safe_repo(value):
     repo = Path(value).expanduser().resolve()
-    if PROJECTS_ROOT not in repo.parents and repo != PROJECTS_ROOT:
-        raise ValueError('repo_path must stay under /Users/joaopaulo/Documents/Projetos')
+    if PROJECTS_ROOT not in repo.parents and repo != PROJECTS_ROOT and not os.getenv('DEVFLOW_ALLOW_ANY_REPO'):
+        raise ValueError(f'repo_path must stay under {PROJECTS_ROOT}')
     if not repo.is_dir():
         raise ValueError('repo_path is not a directory')
     result = subprocess.run(['git', '-C', str(repo), 'rev-parse', '--is-inside-work-tree'], capture_output=True, text=True, timeout=10)

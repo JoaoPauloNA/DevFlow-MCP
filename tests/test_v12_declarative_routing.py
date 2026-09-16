@@ -462,18 +462,18 @@ class TestDeclarativeRouting(unittest.TestCase):
     def test_19_backward_compatibility_v11(self):
         legacy_v11 = {
             "providers": {
-                "codex2": {"base_url": "http://127.0.0.1:8321/v1", "secret_key": "CLIPROXY_CODEX2_KEY", "quota_group": "codex2"},
-                "agy": {"base_url": "http://127.0.0.1:8310/v1", "secret_key": "CLIPROXY_AGY_KEY", "quota_group": "agy"}
+                "primary-gw": {"base_url": "http://127.0.0.1:8321/v1", "secret_key": "CLIPROXY_PRIMARY_KEY", "quota_group": "primary"},
+                "backup-gw": {"base_url": "http://127.0.0.1:8311/v1", "secret_key": "CLIPROXY_BACKUP_KEY", "quota_group": "backup"}
             },
             "routes": {
-                "ENGINEER": [["codex2", "gpt-5.6-terra-medium"]],
-                "DEV:FRONTEND:SIMPLE": [["agy", "gemini-3.7-flash-high"], ["codex2", "gpt-5.6-luna"]]
+                "ENGINEER": [["primary-gw", "gpt-5.6-terra-medium"]],
+                "DEV:FRONTEND:SIMPLE": [["backup-gw", "gemini-3.7-flash-high"], ["primary-gw", "gpt-5.6-luna"]]
             }
         }
         converted = convert_legacy_roles_to_v12(legacy_v11)
         self.assertTrue(validate_routing_config(converted))
-        self.assertIn("codex2", converted["connections"])
-        self.assertIn("agy", converted["connections"])
+        self.assertIn("primary-gw", converted["connections"])
+        self.assertIn("backup-gw", converted["connections"])
         self.assertEqual(len(converted["roles"]["DEV:FRONTEND:SIMPLE"]["candidates"]), 2)
 
     def test_20_migration_tool(self):
@@ -483,10 +483,10 @@ class TestDeclarativeRouting(unittest.TestCase):
             
             legacy_content = {
                 "providers": {
-                    "codex2": {"base_url": "http://127.0.0.1:8321/v1", "secret_key": "CLIPROXY_CODEX2_KEY", "quota_group": "codex2"}
+                    "primary-gw": {"base_url": "http://127.0.0.1:8321/v1", "secret_key": "CLIPROXY_PRIMARY_KEY", "quota_group": "primary"}
                 },
                 "routes": {
-                    "ENGINEER": [["codex2", "gpt-5.6-terra-medium"]]
+                    "ENGINEER": [["primary-gw", "gpt-5.6-terra-medium"]]
                 }
             }
             legacy_file.write_text(json.dumps(legacy_content), encoding='utf-8')

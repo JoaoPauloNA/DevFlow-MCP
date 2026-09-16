@@ -239,7 +239,7 @@ def run_canary():
     assert frozen_hash == expected_hash, f"Snapshot hash mismatch: {frozen_hash} != {expected_hash}"
 
     # Export test battery to DadosTeste
-    dados_teste_dir = Path("/Users/joaopaulo/Meu Drive/Projetos (1)/DadosTeste/020-DevFlow-v1.2-Declarative-Routing")
+    dados_teste_dir = Path(os.getenv('DEVFLOW_DADOS_TESTE_DIR', '/tmp/DadosTeste/020-DevFlow-v1.2-Declarative-Routing'))
     dados_teste_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. routing-config-tested.json

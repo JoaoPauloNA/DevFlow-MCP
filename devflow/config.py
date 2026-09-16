@@ -204,7 +204,7 @@ def secret_values():
     """Resolve secrets securely from environment or local secret files without exposing raw tokens."""
     bundled = ROOT / 'secrets.env'
     custom = os.getenv('DEVFLOW_SECRETS_FILE')
-    path = Path(custom) if custom else (bundled if bundled.exists() else Path('/Users/joaopaulo/Documents/secret.key'))
+    path = Path(custom) if custom else bundled
     
     values = {}
     if path.exists():

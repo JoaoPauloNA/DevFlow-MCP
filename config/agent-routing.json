@@ -4,78 +4,29 @@
     "PROVIDER_UNAVAILABLE",
     "RATE_LIMITED",
     "TIMEOUT",
-    "AUTH_UNAVAILABLE",
-    "CLI_UNAVAILABLE",
-    "MODEL_UNAVAILABLE",
     "INVALID_JSON",
-    "INVALID_SCHEMA",
-    "CONNECTION_REFUSED",
     "HTTP_ERROR"
   ],
   "connections": {
-    "codex": {
-      "type": "openai-compatible",
-      "base_url": "http://127.0.0.1:8320/v1",
-      "auth": {
-        "type": "env",
-        "env": "CLIPROXY_CODEX_API_KEY"
-      },
-      "quota_group": "codex",
-      "enabled": true,
-      "timeout": 180
-    },
-    "codex2": {
+    "primary-gateway": {
       "type": "openai-compatible",
       "base_url": "http://127.0.0.1:8321/v1",
       "auth": {
         "type": "env",
-        "env": "CLIPROXY_CODEX2_API_KEY"
+        "env": "CLIPROXY_API_KEY"
       },
-      "quota_group": "codex2",
+      "quota_group": "primary",
       "enabled": true,
       "timeout": 180
     },
-    "codex3": {
-      "type": "openai-compatible",
-      "base_url": "http://127.0.0.1:8322/v1",
-      "auth": {
-        "type": "env",
-        "env": "CLIPROXY_CODEX3_API_KEY"
-      },
-      "quota_group": "codex3",
-      "enabled": true,
-      "timeout": 180
-    },
-    "agy": {
-      "type": "openai-compatible",
-      "base_url": "http://127.0.0.1:8310/v1",
-      "auth": {
-        "type": "env",
-        "env": "CLIPROXY_AGY_API_KEY"
-      },
-      "quota_group": "agy",
-      "enabled": true,
-      "timeout": 180
-    },
-    "agy2": {
-      "type": "openai-compatible",
-      "base_url": "http://127.0.0.1:8312/v1",
-      "auth": {
-        "type": "env",
-        "env": "CLIPROXY_AGY2_API_KEY"
-      },
-      "quota_group": "agy2",
-      "enabled": true,
-      "timeout": 180
-    },
-    "agy3": {
+    "backup-gateway": {
       "type": "openai-compatible",
       "base_url": "http://127.0.0.1:8311/v1",
       "auth": {
         "type": "env",
-        "env": "CLIPROXY_AGY3_API_KEY"
+        "env": "CLIPROXY_BACKUP_KEY"
       },
-      "quota_group": "agy3",
+      "quota_group": "backup",
       "enabled": true,
       "timeout": 180
     }
@@ -85,22 +36,15 @@
       "strategy": "sequential",
       "candidates": [
         {
-          "id": "engineer-codex2",
-          "connection": "codex2",
+          "id": "engineer-primary",
+          "connection": "primary-gateway",
           "model": "gpt-5.6-terra-medium",
           "enabled": true,
           "technical_retries": 1
         },
         {
-          "id": "engineer-codex3",
-          "connection": "codex3",
-          "model": "gpt-5.6-sol-medium",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "engineer-codex",
-          "connection": "codex",
+          "id": "engineer-backup",
+          "connection": "backup-gateway",
           "model": "gpt-5.6-sol-medium",
           "enabled": true,
           "technical_retries": 1
@@ -111,36 +55,15 @@
       "strategy": "sequential",
       "candidates": [
         {
-          "id": "dev-fe-simple-agy",
-          "connection": "agy",
+          "id": "dev-fe-simple-primary",
+          "connection": "primary-gateway",
           "model": "gemini-3.7-flash-high",
           "enabled": true,
           "technical_retries": 1
         },
         {
-          "id": "dev-fe-simple-agy3",
-          "connection": "agy3",
-          "model": "gemini-3.7-flash-high",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-fe-simple-codex2",
-          "connection": "codex2",
-          "model": "gpt-5.6-luna",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-fe-simple-codex3",
-          "connection": "codex3",
-          "model": "gpt-5.6-luna",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-fe-simple-codex",
-          "connection": "codex",
+          "id": "dev-fe-simple-backup",
+          "connection": "backup-gateway",
           "model": "gpt-5.6-luna",
           "enabled": true,
           "technical_retries": 1
@@ -151,29 +74,15 @@
       "strategy": "sequential",
       "candidates": [
         {
-          "id": "dev-fe-complex-agy",
-          "connection": "agy",
+          "id": "dev-fe-complex-primary",
+          "connection": "primary-gateway",
           "model": "gemini-3.8-flash-high",
           "enabled": true,
           "technical_retries": 1
         },
         {
-          "id": "dev-fe-complex-codex2",
-          "connection": "codex2",
-          "model": "gpt-5.6-terra-medium",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-fe-complex-codex3",
-          "connection": "codex3",
-          "model": "gpt-5.6-terra-medium",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-fe-complex-codex",
-          "connection": "codex",
+          "id": "dev-fe-complex-backup",
+          "connection": "backup-gateway",
           "model": "gpt-5.6-terra-medium",
           "enabled": true,
           "technical_retries": 1
@@ -184,30 +93,16 @@
       "strategy": "sequential",
       "candidates": [
         {
-          "id": "dev-be-simple-codex2",
-          "connection": "codex2",
+          "id": "dev-be-simple-primary",
+          "connection": "primary-gateway",
           "model": "gpt-5.6-luna",
           "enabled": true,
           "technical_retries": 1
         },
         {
-          "id": "dev-be-simple-agy3",
-          "connection": "agy3",
+          "id": "dev-be-simple-backup",
+          "connection": "backup-gateway",
           "model": "gemini-3.7-flash-high",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-be-simple-codex3",
-          "connection": "codex3",
-          "model": "gpt-5.6-luna",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-be-simple-codex",
-          "connection": "codex",
-          "model": "gpt-5.6-luna",
           "enabled": true,
           "technical_retries": 1
         }
@@ -217,30 +112,16 @@
       "strategy": "sequential",
       "candidates": [
         {
-          "id": "dev-be-complex-codex2",
-          "connection": "codex2",
+          "id": "dev-be-complex-primary",
+          "connection": "primary-gateway",
           "model": "gpt-5.6-terra-medium",
           "enabled": true,
           "technical_retries": 1
         },
         {
-          "id": "dev-be-complex-agy",
-          "connection": "agy",
+          "id": "dev-be-complex-backup",
+          "connection": "backup-gateway",
           "model": "gemini-3.8-flash-high",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-be-complex-codex3",
-          "connection": "codex3",
-          "model": "gpt-5.6-terra-medium",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-be-complex-codex",
-          "connection": "codex",
-          "model": "gpt-5.6-terra-medium",
           "enabled": true,
           "technical_retries": 1
         }
@@ -250,30 +131,16 @@
       "strategy": "sequential",
       "candidates": [
         {
-          "id": "dev-db-simple-codex2",
-          "connection": "codex2",
+          "id": "dev-db-simple-primary",
+          "connection": "primary-gateway",
           "model": "gpt-5.6-luna",
           "enabled": true,
           "technical_retries": 1
         },
         {
-          "id": "dev-db-simple-agy3",
-          "connection": "agy3",
+          "id": "dev-db-simple-backup",
+          "connection": "backup-gateway",
           "model": "gemini-3.7-flash-high",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-db-simple-codex3",
-          "connection": "codex3",
-          "model": "gpt-5.6-luna",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-db-simple-codex",
-          "connection": "codex",
-          "model": "gpt-5.6-luna",
           "enabled": true,
           "technical_retries": 1
         }
@@ -283,30 +150,16 @@
       "strategy": "sequential",
       "candidates": [
         {
-          "id": "dev-db-complex-codex2",
-          "connection": "codex2",
+          "id": "dev-db-complex-primary",
+          "connection": "primary-gateway",
           "model": "gpt-5.6-terra-medium",
           "enabled": true,
           "technical_retries": 1
         },
         {
-          "id": "dev-db-complex-agy",
-          "connection": "agy",
+          "id": "dev-db-complex-backup",
+          "connection": "backup-gateway",
           "model": "gemini-3.8-flash-high",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-db-complex-codex3",
-          "connection": "codex3",
-          "model": "gpt-5.6-terra-medium",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "dev-db-complex-codex",
-          "connection": "codex",
-          "model": "gpt-5.6-terra-medium",
           "enabled": true,
           "technical_retries": 1
         }
@@ -316,30 +169,16 @@
       "strategy": "sequential",
       "candidates": [
         {
-          "id": "qa-simple-codex2",
-          "connection": "codex2",
+          "id": "qa-simple-primary",
+          "connection": "primary-gateway",
           "model": "gpt-5.6-luna",
           "enabled": true,
           "technical_retries": 1
         },
         {
-          "id": "qa-simple-agy3",
-          "connection": "agy3",
+          "id": "qa-simple-backup",
+          "connection": "backup-gateway",
           "model": "gemini-3.7-flash-high",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "qa-simple-codex3",
-          "connection": "codex3",
-          "model": "gpt-5.6-luna",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "qa-simple-codex",
-          "connection": "codex",
-          "model": "gpt-5.6-luna",
           "enabled": true,
           "technical_retries": 1
         }
@@ -349,29 +188,15 @@
       "strategy": "sequential",
       "candidates": [
         {
-          "id": "qa-complex-agy",
-          "connection": "agy",
+          "id": "qa-complex-primary",
+          "connection": "primary-gateway",
           "model": "gemini-3.8-flash-high",
           "enabled": true,
           "technical_retries": 1
         },
         {
-          "id": "qa-complex-codex2",
-          "connection": "codex2",
-          "model": "gpt-5.6-terra-medium",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "qa-complex-codex3",
-          "connection": "codex3",
-          "model": "gpt-5.6-terra-medium",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "qa-complex-codex",
-          "connection": "codex",
+          "id": "qa-complex-backup",
+          "connection": "backup-gateway",
           "model": "gpt-5.6-terra-medium",
           "enabled": true,
           "technical_retries": 1
@@ -382,36 +207,15 @@
       "strategy": "sequential",
       "candidates": [
         {
-          "id": "iqa-normal-agy3",
-          "connection": "agy3",
+          "id": "iqa-normal-primary",
+          "connection": "primary-gateway",
           "model": "gemini-3.7-flash-high",
           "enabled": true,
           "technical_retries": 1
         },
         {
-          "id": "iqa-normal-agy",
-          "connection": "agy",
-          "model": "gemini-3.7-flash-high",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "iqa-normal-codex2",
-          "connection": "codex2",
-          "model": "gpt-5.6-luna",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "iqa-normal-codex3",
-          "connection": "codex3",
-          "model": "gpt-5.6-luna",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "iqa-normal-codex",
-          "connection": "codex",
+          "id": "iqa-normal-backup",
+          "connection": "backup-gateway",
           "model": "gpt-5.6-luna",
           "enabled": true,
           "technical_retries": 1
@@ -422,30 +226,16 @@
       "strategy": "sequential",
       "candidates": [
         {
-          "id": "iqa-critical-codex2",
-          "connection": "codex2",
+          "id": "iqa-critical-primary",
+          "connection": "primary-gateway",
           "model": "gpt-5.6-terra-medium",
           "enabled": true,
           "technical_retries": 1
         },
         {
-          "id": "iqa-critical-agy",
-          "connection": "agy",
+          "id": "iqa-critical-backup",
+          "connection": "backup-gateway",
           "model": "gemini-3.8-flash-high",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "iqa-critical-codex3",
-          "connection": "codex3",
-          "model": "gpt-5.6-terra-medium",
-          "enabled": true,
-          "technical_retries": 1
-        },
-        {
-          "id": "iqa-critical-codex",
-          "connection": "codex",
-          "model": "gpt-5.6-terra-medium",
           "enabled": true,
           "technical_retries": 1
         }

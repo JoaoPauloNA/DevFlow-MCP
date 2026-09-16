@@ -6,17 +6,17 @@ from devflow.worker import Worker
 from devflow.worker import json_object
 
 EXPECTED={
-'ENGINEER':[('codex2','gpt-5.6-terra-medium'),('codex3','gpt-5.6-sol-medium'),('codex','gpt-5.6-sol-medium')],
-'DEV:FRONTEND:SIMPLE':[('agy','gemini-3.7-flash-high'),('agy3','gemini-3.7-flash-high'),('codex2','gpt-5.6-luna'),('codex3','gpt-5.6-luna'),('codex','gpt-5.6-luna')],
-'DEV:FRONTEND:COMPLEX':[('agy','gemini-3.8-flash-high'),('codex2','gpt-5.6-terra-medium'),('codex3','gpt-5.6-terra-medium'),('codex','gpt-5.6-terra-medium')],
-'DEV:BACKEND:SIMPLE':[('codex2','gpt-5.6-luna'),('agy3','gemini-3.7-flash-high'),('codex3','gpt-5.6-luna'),('codex','gpt-5.6-luna')],
-'DEV:BACKEND:COMPLEX':[('codex2','gpt-5.6-terra-medium'),('agy','gemini-3.8-flash-high'),('codex3','gpt-5.6-terra-medium'),('codex','gpt-5.6-terra-medium')],
-'DEV:DATABASE:SIMPLE':[('codex2','gpt-5.6-luna'),('agy3','gemini-3.7-flash-high'),('codex3','gpt-5.6-luna'),('codex','gpt-5.6-luna')],
-'DEV:DATABASE:COMPLEX':[('codex2','gpt-5.6-terra-medium'),('agy','gemini-3.8-flash-high'),('codex3','gpt-5.6-terra-medium'),('codex','gpt-5.6-terra-medium')],
-'QA:SIMPLE':[('codex2','gpt-5.6-luna'),('agy3','gemini-3.7-flash-high'),('codex3','gpt-5.6-luna'),('codex','gpt-5.6-luna')],
-'QA:COMPLEX':[('agy','gemini-3.8-flash-high'),('codex2','gpt-5.6-terra-medium'),('codex3','gpt-5.6-terra-medium'),('codex','gpt-5.6-terra-medium')],
-'IQA:NORMAL':[('agy3','gemini-3.7-flash-high'),('agy','gemini-3.7-flash-high'),('codex2','gpt-5.6-luna'),('codex3','gpt-5.6-luna'),('codex','gpt-5.6-luna')],
-'IQA:CRITICAL':[('codex2','gpt-5.6-terra-medium'),('agy','gemini-3.8-flash-high'),('codex3','gpt-5.6-terra-medium'),('codex','gpt-5.6-terra-medium')]}
+'ENGINEER':[('primary-gateway','gpt-5.6-terra-medium'),('backup-gateway','gpt-5.6-sol-medium')],
+'DEV:FRONTEND:SIMPLE':[('primary-gateway','gemini-3.7-flash-high'),('backup-gateway','gpt-5.6-luna')],
+'DEV:FRONTEND:COMPLEX':[('primary-gateway','gemini-3.8-flash-high'),('backup-gateway','gpt-5.6-terra-medium')],
+'DEV:BACKEND:SIMPLE':[('primary-gateway','gpt-5.6-luna'),('backup-gateway','gemini-3.7-flash-high')],
+'DEV:BACKEND:COMPLEX':[('primary-gateway','gpt-5.6-terra-medium'),('backup-gateway','gemini-3.8-flash-high')],
+'DEV:DATABASE:SIMPLE':[('primary-gateway','gpt-5.6-luna'),('backup-gateway','gemini-3.7-flash-high')],
+'DEV:DATABASE:COMPLEX':[('primary-gateway','gpt-5.6-terra-medium'),('backup-gateway','gemini-3.8-flash-high')],
+'QA:SIMPLE':[('primary-gateway','gpt-5.6-luna'),('backup-gateway','gemini-3.7-flash-high')],
+'QA:COMPLEX':[('primary-gateway','gemini-3.8-flash-high'),('backup-gateway','gpt-5.6-terra-medium')],
+'IQA:NORMAL':[('primary-gateway','gemini-3.7-flash-high'),('backup-gateway','gpt-5.6-luna')],
+'IQA:CRITICAL':[('primary-gateway','gpt-5.6-terra-medium'),('backup-gateway','gemini-3.8-flash-high')]}
 def test_exact_model_matrix():
     assert {k:[tuple(x) for x in v] for k,v in CONFIG['routes'].items()}==EXPECTED
 

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Export DevFlow test evidence without prompts, contexts, or secrets."""
 import csv
+import os
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-DB_PATH = Path('/Users/joaopaulo/Library/Application Support/DevFlow/runtime/devflow.sqlite3')
-OUT = Path('/Users/joaopaulo/Meu Drive/Projetos (1)/DadosTeste/002-DevFlow-MCP')
+DB_PATH = Path(os.getenv('DEVFLOW_DB', 'runtime/devflow.sqlite3'))
+OUT = Path(os.getenv('DEVFLOW_EXPORT_OUT', 'runtime/exports'))
 FINAL_WORKFLOW = 'wf-7e66e77d3b6f'
 
 
